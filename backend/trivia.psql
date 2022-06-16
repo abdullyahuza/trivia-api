@@ -118,12 +118,6 @@ COPY public.categories (id, type) FROM stdin;
 6	Sports
 \.
 
-Science
-Art
-Geography
-History
-Entertainment
-Sports
 
 --
 -- Data for Name: questions; Type: TABLE DATA; Schema: public; Owner: student
@@ -193,4 +187,3 @@ ALTER TABLE ONLY public.questions
 --
 -- PostgreSQL database dump complete
 --
-
