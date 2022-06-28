@@ -8,12 +8,12 @@ from flaskr import create_app
 from models import setup_db, Question, Category
 load_dotenv()
 
-DB_DIALECT=os.getenv("DB_DIALECT")
+DB_DIALECT = os.getenv("DB_DIALECT")
 DB_USERNAME = os.getenv("DB_USERNAME")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_SERVER = os.getenv("DB_SERVER")
 DB_NAME = os.getenv("TEST_DB_NAME")
-DB_PORT=os.getenv("DB_PORT")
+DB_PORT = os.getenv("DB_PORT")
 
 
 class TriviaTestCase(unittest.TestCase):
@@ -30,10 +30,10 @@ class TriviaTestCase(unittest.TestCase):
 
         setup_db(self.app, self.database_path)
         self.new_question = {
-              "question": "What is my name",
-              "answer": "Abdull Yahuza",
-              "difficulty": 1,
-              "category": 3
+            "question": "What is my name",
+            "answer": "Abdull Yahuza",
+            "difficulty": 1,
+            "category": 3
         }
         self.search_question = {
             "searchTerm": "What is my name"
@@ -58,8 +58,7 @@ class TriviaTestCase(unittest.TestCase):
             self.db.init_app(self.app)
             # create all tables
             self.db.create_all()
-            
-    
+
     def tearDown(self):
         """Executed after reach test"""
         pass
@@ -68,6 +67,7 @@ class TriviaTestCase(unittest.TestCase):
     TODO
     Write at least one test for each test for successful operation and for expected errors.
     """
+
     def test_get_all_available_categories(self):
         response = self.client().get('/categories')
         data = json.loads(response.data)
@@ -98,7 +98,7 @@ class TriviaTestCase(unittest.TestCase):
     # def test_delete_a_question(self):
     #     questions = Question.query.all()
     #     last_question = questions[len(questions)-1]
-        
+
     #     response = self.client().delete(f"/questions/{last_question.id}")
     #     data = json.loads(response.data)
 
@@ -121,7 +121,7 @@ class TriviaTestCase(unittest.TestCase):
         data = json.loads(response.data)
 
         questions = Question.query.all()
-        last_question = questions[len(questions)-1]
+        last_question = questions[len(questions) - 1]
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data["success"], True)
@@ -160,13 +160,17 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['message'], "method not allowed")
 
     def test_get_questions_by_category(self):
-        response = self.client().get(f'/categories/{self.category_test}/questions')
+        response = self.client().get(
+            f'/categories/{self.category_test}/questions')
         data = json.loads(response.data)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data["success"], True)
         self.assertTrue(len(data["questions"]))
-        self.assertEqual(data["current_category"], Category.query.get(self.category_test).type)
+        self.assertEqual(
+            data["current_category"],
+            Category.query.get(
+                self.category_test).type)
 
     def test_404_questions_category(self):
         response = self.client().get('/categories/00000/questions')
@@ -176,14 +180,14 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], "resource not found")
 
-    def  test_get_quizzes(self):
+    def test_get_quizzes(self):
         response = self.client().post('/quizzes', json=self.quiz_data)
         data = json.loads(response.data)
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data['success'], True)
 
-    def  test_405_get_quizzes(self):
+    def test_405_get_quizzes(self):
         response = self.client().delete('/quizzes', json=self.quiz_data)
         data = json.loads(response.data)
 
@@ -199,7 +203,7 @@ class TriviaTestCase(unittest.TestCase):
         self.assertEqual(data['success'], False)
         self.assertEqual(data['message'], "bad request")
 
-        
+
 # Make the tests conveniently executable
 if __name__ == "__main__":
     unittest.main()

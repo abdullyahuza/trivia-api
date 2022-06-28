@@ -8,6 +8,7 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
+
 def paginate_questions(request, selection):
     page = request.args.get("page", 1, type=int)
     start = (page - 1) * QUESTIONS_PER_PAGE
@@ -17,7 +18,7 @@ def paginate_questions(request, selection):
     current_questions = questions[start:end]
 
     return current_questions
-        
+
 
 def create_app(test_config=None):
     # create and configure the app
@@ -45,40 +46,41 @@ def create_app(test_config=None):
         # format categories as dict with key/value as category id/type
         formatted_categories = {}
         for category in categories:
-            formatted_categories[category.id] = category.type 
-        
+            formatted_categories[category.id] = category.type
+
         # return not found if categories is empty
         if len(formatted_categories) == 0:
             abort(404)
 
-        # else return json object 
+        # else return json object
         response_dict = {
             "success": True,
             "categories": formatted_categories
         }
         return jsonify(response_dict)
 
-    
     # Get all questions
+
     @app.route('/questions')
     def get_all_questions():
         # get all the questions
         questions = Question.query.order_by(Question.id).all()
         paginated_formatted_questions = paginate_questions(request, questions)
 
-        #get all categories
+        # get all categories
         categories = Category.query.order_by(Category.id).all()
-        
+
         # format categories as dict with key/value as category id/type
         formatted_categories = {}
         for category in categories:
-            formatted_categories[category.id] = category.type 
+            formatted_categories[category.id] = category.type
 
         # return 404 if questions is empty or categories is empty
-        if len(paginated_formatted_questions) == 0 or len(formatted_categories) == 0:
+        if len(paginated_formatted_questions) == 0 or len(
+                formatted_categories) == 0:
             abort(404)
 
-        # else return json object 
+        # else return json object
         response_dict = {
             "success": True,
             "questions": paginated_formatted_questions,
@@ -87,7 +89,7 @@ def create_app(test_config=None):
             "current_category": None
         }
         return jsonify(response_dict)
-    
+
     # Delete a question
     @app.route('/questions/<int:question_id>', methods=['DELETE'])
     def delete_a_question(question_id):
@@ -99,7 +101,7 @@ def create_app(test_config=None):
 
             question.delete()
             questions = Question.query.order_by(Question.id).all()
-            returned_questions = paginate_questions(request, questions) 
+            returned_questions = paginate_questions(request, questions)
             response_dict = {
                 "success": True,
                 "deleted": question_id,
@@ -108,7 +110,7 @@ def create_app(test_config=None):
                 "current_category": category.type
             }
             return jsonify(response_dict)
-        except:
+        except BaseException:
             abort(422)
 
     # post a new question
@@ -131,18 +133,19 @@ def create_app(test_config=None):
                 "category": int(question.category)
             }
             return jsonify(response_dict)
-        except:
+        except BaseException:
             abort(422)
 
     # search a question
     @app.route('/questions/search', methods=['POST'])
     def search_questions():
-        
+
         try:
             request_str = request.get_json()['searchTerm']
             search_question = '%{}%'.format(request_str)
-            
-            questions = Question.query.filter(Question.question.ilike(search_question)).all()
+
+            questions = Question.query.filter(
+                Question.question.ilike(search_question)).all()
             formatted_questions = [question.format() for question in questions]
 
             response_dict = {
@@ -152,22 +155,24 @@ def create_app(test_config=None):
                 "current_category": None
             }
             return jsonify(response_dict)
-        except:
+        except BaseException:
             abort(405)
 
-
     # get questions by category
+
     @app.route('/categories/<int:cat_id>/questions', methods=['GET'])
     def get_qestions_by_category(cat_id):
         try:
             # get all the questions filtered by cat_id
-            questions = Question.query.filter_by(category=str(cat_id)).order_by(Question.id).all()
+            questions = Question.query.filter_by(
+                category=str(cat_id)).order_by(
+                Question.id).all()
             formatted_questions = [question.format() for question in questions]
 
-            #get category
+            # get category
             category = Category.query.get(cat_id)
-            
-            # else return json object 
+
+            # else return json object
             response_dict = {
                 "success": True,
                 "questions": formatted_questions,
@@ -175,24 +180,26 @@ def create_app(test_config=None):
                 "current_category": category.type
             }
             return jsonify(response_dict)
-        except:
+        except BaseException:
             abort(404)
 
     @app.route('/quizzes', methods=['POST'])
     def get_quizzes():
 
         try:
-            category_id = int(request.get_json()['quiz_category']['id']) #get the category id
-            previous_questions = request.get_json().get('previous_questions') #previous questions
+            # get the category id
+            category_id = int(request.get_json()['quiz_category']['id'])
+            previous_questions = request.get_json().get(
+                'previous_questions')  # previous questions
 
             if previous_questions is None:
                 previous_questions = []
             else:
                 previous_questions = request.get_json()["previous_questions"]
 
-            categories = Category.query.all()   #query categories
-            
-            #store categories ids for check
+            categories = Category.query.all()  # query categories
+
+            # store categories ids for check
             categories_id = []
             for cat in categories:
                 categories_id.append(cat.id)
@@ -202,26 +209,29 @@ def create_app(test_config=None):
                 # get all the questions
                 questions = Question.query.order_by(Question.id).all()
 
-                questions_id = []   #store the questions ids for comparison agains previous_questions
+                questions_id = []  # store the questions ids for comparison agains previous_questions
                 for question in questions:
                     questions_id.append(question.id)
 
-            elif (category_id in categories_id):    #a specific category
+            elif (category_id in categories_id):  # a specific category
                 # get all the questions filtered by category id
-                questions = Question.query.filter_by(category=str(category_id)).order_by(Question.id).all()
-                
+                questions = Question.query.filter_by(
+                    category=str(category_id)).order_by(
+                    Question.id).all()
+
                 questions_id = []
                 for question in questions:
                     questions_id.append(question.id)
             else:
                 abort(400)
-            
+
             # get random question id from questions_id
             question_id = random.choice(questions_id)
 
-            # let assume the question is not answered 
+            # let assume the question is not answered
             answered = False
-            # while the question is not answered, send the question and mark it answered
+            # while the question is not answered, send the question and mark it
+            # answered
             while not answered:
                 if question_id in previous_questions:
                     question_id = random.choice(questions_id)
@@ -246,7 +256,7 @@ def create_app(test_config=None):
             }
 
             return jsonify(response_dict)
-        except:
+        except BaseException:
             abort(400)
     """
     @TODO:
@@ -279,10 +289,9 @@ def create_app(test_config=None):
 
     @app.errorhandler(405)
     def not_found(error):
-        return (
-            jsonify({"success": False, "error": 405, "message": "method not allowed"}),
-            405
-        )
+        return (jsonify({"success": False, "error": 405,
+                         "message": "method not allowed"}), 405)
+
     @app.errorhandler(500)
     def server_error(error):
         return jsonify({
@@ -292,4 +301,3 @@ def create_app(test_config=None):
         }), 500
 
     return app
-
